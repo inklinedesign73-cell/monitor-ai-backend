@@ -1,0 +1,7 @@
+venv/
+Lib/
+Scripts/
+Include/
+monitor.db
+__pycache__/
+*.pyc
