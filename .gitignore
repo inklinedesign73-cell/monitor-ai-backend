@@ -4,7 +4,7 @@ Scripts/
 Include/
 __pycache__/
 *.pyc
-monitor.db
 pyvenv.cfg
+monitor.db
 flutter
 Sign up for GitHub user/
