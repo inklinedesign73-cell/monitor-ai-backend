@@ -1,39 +1,32 @@
 import requests
 from bs4 import BeautifulSoup
 
-BASE_URL = "https://monitoruloficial.ro"
+URLS = [
+    "https://monitoruloficial.ro/pierderi-persoane-fizice/",
+    "https://monitoruloficial.ro/pierderi-persoane-juridice/",
+    "https://monitoruloficial.ro/concursuri-posturi-publice/",
+    "https://monitoruloficial.ro/anunturi-profesionisti/",
+    "https://monitoruloficial.ro/publicare-acte-normative/"
+]
 
 
 def fetch_documents():
-    url = BASE_URL
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
-
     documents = []
 
-    # 🔍 extragem toate link-urile
-    for a in soup.find_all("a"):
-        title = a.get_text(strip=True)
-        link = a.get("href")
+    for url in URLS:
+        try:
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, "html.parser")
 
-        # 🔴 filtrare
-        if not title or not link:
-            continue
+            # 🔥 luam titlul paginii ca document
+            title = soup.title.string.strip() if soup.title else url
 
-        if len(title) < 15:
-            continue
+            documents.append({
+                "title": title,
+                "url": url
+            })
 
-        if link == "#":
-            continue
+        except Exception as e:
+            print("ERROR:", e)
 
-        # 🔗 transformăm în link complet
-        if not link.startswith("http"):
-            link = BASE_URL + link
-
-        documents.append({
-            "title": title,
-            "url": link
-        })
-
-    # limităm pentru stabilitate
-    return documents[:20]
+    return documents
