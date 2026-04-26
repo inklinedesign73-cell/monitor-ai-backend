@@ -1,19 +1,29 @@
-def analyze(text):
-    text_lower = text.lower()
+def categorize(text):
+    text = text.lower()
 
-    if any(word in text_lower for word in ["it", "software", "digital", "informatic"]):
-        category = "IT"
-    elif any(word in text_lower for word in ["restaurant", "hotel", "turism", "alimentatie"]):
-        category = "HORECA"
-    elif any(word in text_lower for word in ["construct", "autorizatie", "urbanism", "locuinta"]):
-        category = "CONSTRUCTII"
-    elif any(word in text_lower for word in ["pierdut", "anunt", "publicare", "declar"]):
-        category = "ALTELE"
+    if "it" in text or "software" in text:
+        return "IT"
+    elif "restaurant" in text or "horeca" in text:
+        return "HORECA"
+    elif "construct" in text:
+        return "CONSTRUCTII"
+    elif "persoane juridice" in text:
+        return "JURIDIC"
+    elif "persoane fizice" in text:
+        return "PERSONAL"
     else:
-        category = "ALTELE"
+        return "ALTELE"
+
+
+def summarize(text):
+    return text[:120] + "..."
+
+
+def analyze(doc):
+    title = doc.get("title", "")
 
     return {
-        "summary": text[:200],
-        "category": category,
-        "impact": "mic"
+        "title": title,
+        "category": categorize(title),
+        "summary": summarize(title)
     }
