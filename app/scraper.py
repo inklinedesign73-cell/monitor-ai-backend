@@ -5,41 +5,36 @@ BASE_URL = "https://monitoruloficial.ro"
 
 
 def fetch_documents():
-    print("SCRAPER VERSION 2 LOADED")  # 🔥 debug - verificăm deploy
+    response = requests.get(BASE_URL)
+    soup = BeautifulSoup(response.text, "html.parser")
 
-    try:
-        response = requests.get(BASE_URL, timeout=10)
-        soup = BeautifulSoup(response.text, "html.parser")
+    documents = []
 
-        documents = []
+    for a in soup.find_all("a"):
+        title = a.get_text(strip=True)
+        link = a.get("href")
 
-        # 🔍 extragem toate link-urile din pagină
-        for a in soup.find_all("a"):
-            title = a.get_text(strip=True)
-            link = a.get("href")
+        if not title or not link:
+            continue
 
-            # 🔴 filtrări esențiale
-            if not title or not link:
-                continue
+        # 🔴 ignorăm link-uri externe
+        if link.startswith("http") and "monitoruloficial.ro" not in link:
+            continue
 
-            if len(title) < 15:
-                continue
+        # 🔴 ignorăm junk
+        if len(title) < 10:
+            continue
 
-            if link == "#" or link.startswith("javascript"):
-                continue
+        if link == "#" or link.startswith("javascript"):
+            continue
 
-            # 🔗 transformăm link relativ în absolut
-            if not link.startswith("http"):
-                link = BASE_URL + link
+        # 🔗 transformăm în link complet
+        if not link.startswith("http"):
+            link = BASE_URL + link
 
-            documents.append({
-                "title": title,
-                "url": link
-            })
+        documents.append({
+            "title": title,
+            "url": link
+        })
 
-        # 🔒 limităm pentru stabilitate
-        return documents[:20]
-
-    except Exception as e:
-        print("SCRAPER ERROR:", e)
-        return []
+    return documents[:20]
