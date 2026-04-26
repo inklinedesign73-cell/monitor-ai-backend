@@ -1,16 +1,21 @@
 def categorize(text):
     text = text.lower()
 
-    if "it" in text or "software" in text:
-        return "IT"
-    elif "restaurant" in text or "horeca" in text:
-        return "HORECA"
-    elif "construct" in text:
-        return "CONSTRUCTII"
-    elif "persoane juridice" in text:
-        return "JURIDIC"
+    if "pierderi" in text:
+        return "PIERDERI ACTE"
+
     elif "persoane fizice" in text:
-        return "PERSONAL"
+        return "PERSOANE FIZICE"
+
+    elif "persoane juridice" in text:
+        return "PERSOANE JURIDICE"
+
+    elif "concurs" in text or "posturi" in text:
+        return "CONCURSURI"
+
+    elif "acte normative" in text:
+        return "ACTE NORMATIVE"
+
     else:
         return "ALTELE"
 
