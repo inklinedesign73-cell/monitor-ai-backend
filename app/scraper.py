@@ -17,19 +17,30 @@ def fetch_documents():
         if not title or not link:
             continue
 
-        if link == "#":
+        # 🔴 păstrăm DOAR linkuri interne relevante
+        if not link.startswith("/"):
             continue
 
-        if len(title) < 10:
+        # 🔴 filtrăm doar secțiuni utile
+        allowed = [
+            "pierderi",
+            "concursuri",
+            "anunturi",
+            "acte",
+            "persoane"
+        ]
+
+        if not any(word in link.lower() for word in allowed):
             continue
 
-        # 🔗 IMPORTANT: link complet
-        if not link.startswith("http"):
-            link = BASE_URL + link
+        if len(title) < 5:
+            continue
+
+        full_link = BASE_URL + link
 
         documents.append({
             "title": title,
-            "url": link   # 🔥 DOAR ASTA SCHIMBAT
+            "url": full_link
         })
 
     return documents[:20]
