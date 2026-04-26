@@ -3,27 +3,43 @@ from bs4 import BeautifulSoup
 
 BASE_URL = "https://monitoruloficial.ro"
 
+
 def fetch_documents():
-    url = f"{BASE_URL}/ro/free-monitor"
+    print("SCRAPER VERSION 2 LOADED")  # 🔥 debug - verificăm deploy
 
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
+    try:
+        response = requests.get(BASE_URL, timeout=10)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
+        documents = []
 
-    documents = []
+        # 🔍 extragem toate link-urile din pagină
+        for a in soup.find_all("a"):
+            title = a.get_text(strip=True)
+            link = a.get("href")
 
-    # căutăm orice text relevant (nu doar PDF)
-    for item in soup.find_all("a"):
-        text = item.get_text(strip=True)
-        href = item.get("href")
+            # 🔴 filtrări esențiale
+            if not title or not link:
+                continue
 
-        if text and len(text) > 10:
+            if len(title) < 15:
+                continue
+
+            if link == "#" or link.startswith("javascript"):
+                continue
+
+            # 🔗 transformăm link relativ în absolut
+            if not link.startswith("http"):
+                link = BASE_URL + link
+
             documents.append({
-                "title": text,
-                "link": href if href else ""
+                "title": title,
+                "url": link
             })
 
-    return documents[:10]
+        # 🔒 limităm pentru stabilitate
+        return documents[:20]
+
+    except Exception as e:
+        print("SCRAPER ERROR:", e)
+        return []

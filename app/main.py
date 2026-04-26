@@ -30,7 +30,8 @@ def add_test():
     doc = Document(
         title="Test Monitor Oficial",
         summary="Acesta este un test",
-        category="IT"
+        category="TEST",
+        url="https://monitoruloficial.ro"
     )
 
     db.add(doc)
@@ -46,7 +47,7 @@ def scrape():
     return docs
 
 
-# 🔥 RESET DB (IMPORTANT)
+# 🔥 RESET DB
 @app.get("/reset")
 def reset():
     db = SessionLocal()
@@ -56,7 +57,7 @@ def reset():
     return {"status": "reset done"}
 
 
-# 🔥 INGEST CORECT
+# 🔥 INGEST FINAL
 @app.get("/ingest")
 def ingest():
     db = SessionLocal()
@@ -85,7 +86,8 @@ def ingest():
         new_doc = Document(
             title=ai_result.get("title", doc["title"]),
             summary=ai_result.get("summary", ""),
-            category=ai_result.get("category", "ALTELE")
+            category=ai_result.get("category", "ALTELE"),
+            url=doc.get("url")  # 🔥 AICI E FIXUL IMPORTANT
         )
 
         db.add(new_doc)
