@@ -2,19 +2,26 @@ from fastapi import FastAPI
 from .database import engine, SessionLocal
 from .models import Base, Document
 
+from app.scraper import fetch_documents
+from app.processor import analyze
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
 
 @app.get("/")
 def root():
     return {"status": "merge"}
 
+
 @app.get("/documents")
 def get_documents():
     db = SessionLocal()
     docs = db.query(Document).all()
+    db.close()
     return docs
+
 
 @app.get("/add-test")
 def add_test():
@@ -28,22 +35,28 @@ def add_test():
 
     db.add(doc)
     db.commit()
+    db.close()
 
     return {"status": "added"}
 
-from app.scraper import fetch_documents
 
 @app.get("/scrape")
 def scrape():
     docs = fetch_documents()
     return docs
 
-from app.scraper import fetch_documents
-from app.models import Document
-from app.database import SessionLocal
-from app.processor import analyze
+
+# 🔥 RESET DB (IMPORTANT)
+@app.get("/reset")
+def reset():
+    db = SessionLocal()
+    db.query(Document).delete()
+    db.commit()
+    db.close()
+    return {"status": "reset done"}
 
 
+# 🔥 INGEST CORECT
 @app.get("/ingest")
 def ingest():
     db = SessionLocal()
@@ -52,7 +65,6 @@ def ingest():
     saved = 0
 
     for doc in docs:
-        # verificăm dacă există deja
         exists = db.query(Document).filter(
             Document.title == doc["title"]
         ).first()
@@ -60,25 +72,20 @@ def ingest():
         if exists:
             continue
 
-        # AI safe (merge și fără API key)
         try:
-            ai_result = analyze(doc["title"])
-        except Exception:
+            ai_result = analyze(doc)  # 🔥 FIX IMPORTANT
+        except Exception as e:
+            print("Analyze error:", e)
             ai_result = {
-                "summary": "AI error / fallback",
-                "category": "ALTELE",
-                "impact": "mic"
+                "title": doc["title"],
+                "summary": doc["title"][:100],
+                "category": "ALTELE"
             }
 
-        # normalizăm dacă vine string din AI
-        summary_text = ai_result if isinstance(ai_result, str) else ai_result.get("summary", "")
-
-        category_text = ai_result.get("category", "ALTELE") if isinstance(ai_result, dict) else "ALTELE"
-
         new_doc = Document(
-            title=doc["title"],
-            summary=summary_text,
-            category=category_text
+            title=ai_result.get("title", doc["title"]),
+            summary=ai_result.get("summary", ""),
+            category=ai_result.get("category", "ALTELE")
         )
 
         db.add(new_doc)
@@ -91,4 +98,3 @@ def ingest():
         "status": "ok",
         "saved": saved
     }
-
