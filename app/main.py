@@ -73,9 +73,9 @@ def ingest():
             continue
 
         try:
-            ai_result = analyze(doc)  # 🔥 FIX IMPORTANT
+            ai_result = analyze({"title": doc["title"]})
         except Exception as e:
-            print("Analyze error:", e)
+            print("ANALYZE ERROR:", e)
             ai_result = {
                 "title": doc["title"],
                 "summary": doc["title"][:100],
